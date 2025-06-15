@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './Chat.css';
-import API_CONFIG from '../config/api.js';
 import ReactMarkdown from 'react-markdown';
 
 // Simple SVG icon components
@@ -84,7 +83,7 @@ const ChatBot = () => {
 
     // Send message to backend API
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MESSAGE}`, {
+      const response = await fetch(`https://chatbot-lceu.onrender.com`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
