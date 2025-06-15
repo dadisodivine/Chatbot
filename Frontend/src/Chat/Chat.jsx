@@ -27,14 +27,6 @@ const UserIcon = ({ size = 16 }) => (
   </svg>
 );
 
-const MinimizeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="4,14 10,14 10,20"></polyline>
-    <polyline points="20,10 14,10 14,4"></polyline>
-    <line x1="14" y1="10" x2="21" y2="3"></line>
-    <line x1="3" y1="21" x2="10" y2="14"></line>
-  </svg>
-);
 
 
 
@@ -43,7 +35,6 @@ const ChatBot = () => {
     { id: 1, text: "Hello! I'm your AI assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
   ]);
   const [inputText, setInputText] = useState('');
-  const [isMinimized, setIsMinimized] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const messagesEndRef = useRef(null);
@@ -137,16 +128,14 @@ const ChatBot = () => {
     }
   }, [handleSendMessage]);
 
-  const toggleMinimize = useCallback(() => {
-    setIsMinimized(prev => !prev);
-  }, []);
+
 
   const formatTime = useCallback((timestamp) => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, []);
 
   return (
-    <div className={`chatbot-container ${isMinimized ? 'minimized' : ''}`} role="dialog" aria-label="AI Assistant Chat">
+    <div className='chatbot-container' role="dialog" aria-label="AI Assistant Chat">
       <div className="chatbot-header">
         <div className="header-content">
           <div className="bot-avatar" aria-hidden="true">
@@ -155,22 +144,13 @@ const ChatBot = () => {
           <div className="header-info">
             <h3>AI Assistant</h3>
             <span className="status" aria-label={`Status: ${isConnected ? 'Connected' : 'Disconnected'}`}>
-              {isConnected ? 'Connected' : 'Disconnected'}
+              {isConnected ? 'Online' : 'Offline'}
             </span>
           </div>
         </div>
-        <button 
-          className="minimize-btn"
-          onClick={toggleMinimize}
-          aria-label={isMinimized ? "Maximize chat" : "Minimize chat"}
-          type="button"
-        >
-          {isMinimized ? <MaximizeIcon /> : <MinimizeIcon />}
-        </button>
       </div>
 
-      {!isMinimized && (
-        <>
+      <>
           <div className="chatbot-messages" role="log" aria-live="polite" aria-label="Chat messages">
             {messages.map((message) => (
               <div key={message.id} className={`message ${message.sender}`} role="article">
@@ -235,7 +215,6 @@ const ChatBot = () => {
             </div>
           </form>
         </>
-      )}
     </div>
   );
 };
