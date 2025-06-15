@@ -38,7 +38,7 @@ app.post('/api/message', async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
  // Generate bot response (replace with actual AI integration)
     const chatResponse = await client.chat.complete({
-        model: "mistral-small-latest",
+        model: "mistral-small-2503",
         messages: [{role: 'user', content: message}]
     });
 
