@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const apiKey = process.env.MISTRAL_API_KEY;
-const client = new Mistral(apiKey);
+const client = new Mistral({apiKey:apiKey});
 const app = express();
 const PORT = process.env.PORT || 3001;
 
