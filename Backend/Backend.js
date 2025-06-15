@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server and other common ports
+  origin: ['http://localhost:5173', 'https://chatbot-frontend-c7xo.onrender.com'], // Vite dev server and other common ports
   credentials: true
 }));
 
