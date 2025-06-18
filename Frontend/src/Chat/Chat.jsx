@@ -66,7 +66,7 @@ const ChatBot = () => {
 
     // Send message to backend API
     try {
-      const response = await fetch('https://chatbot-backend-c0ge.onrender.com/api/users/message', {
+      const response = await fetch('https://chatbot-backend-c0ge.onrender.com/api/chats/message', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
