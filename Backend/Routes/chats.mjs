@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 });
 
 // Chat message endpoint
-router.post('/api/message', async (req, res) => {
+router.post('/message', async (req, res) => {
   try {
     const { message, userId, timestamp } = req.body;
 
