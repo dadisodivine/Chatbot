@@ -1,37 +1,36 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './Chat.css';
 import ReactMarkdown from 'react-markdown';
 
-// Simple SVG icon components
+// Modern SVG icon components
 const SendIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="22" y1="2" x2="11" y2="13"></line>
-    <polygon points="22,2 15,22 11,13 2,9"></polygon>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
   </svg>
 );
 
-const BotIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="3" y="11" width="18" height="10" rx="2" ry="2"></rect>
-    <circle cx="12" cy="5" r="2"></circle>
-    <path d="M12 7v4"></path>
-    <line x1="8" y1="16" x2="8" y2="16"></line>
-    <line x1="16" y1="16" x2="16" y2="16"></line>
+const BotIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="11" width="18" height="10" rx="2" fill="currentColor"/>
+    <circle cx="12" cy="5" r="2" fill="currentColor"/>
+    <path d="M12 7V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M8 16H8.01" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M16 16H16.01" stroke="white" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
 
-const UserIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
+const UserIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="7" r="4" fill="currentColor"/>
+    <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
-
-
-
 
 const ChatBot = () => {
-  const [messages, setMessages] = useState([
+  // ... (keep all your existing state and logic)
+   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! I'm your AI assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
   ]);
   const [inputText, setInputText] = useState('');
@@ -138,83 +137,71 @@ const ChatBot = () => {
     <div className='chatbot-container' role="dialog" aria-label="AI Assistant Chat">
       <div className="chatbot-header">
         <div className="header-content">
-          <div className="bot-avatar" aria-hidden="true">
-            <BotIcon size={20} />
+          <div className="bot-avatar">
+            <BotIcon />
           </div>
           <div className="header-info">
             <h3>AI Assistant</h3>
-            <span className="status" aria-label={`Status: ${isConnected ? 'Connected' : 'Disconnected'}`}>
-              {isConnected ? 'Online' : 'Offline'}
-            </span>
+            <div className="status-container">
+              <span className={`status-indicator ${isConnected ? 'online' : 'offline'}`}></span>
+              <span className="status-text">{isConnected ? 'Online' : 'Offline'}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <>
-          <div className="chatbot-messages" role="log" aria-live="polite" aria-label="Chat messages">
-            {messages.map((message) => (
-              <div key={message.id} className={`message ${message.sender}`} role="article">
-                <div className="message-avatar" aria-hidden="true">
-                  {message.sender === 'bot' ? <BotIcon size={16} /> : <UserIcon size={16} />}
-                </div>
-                <div className="message-content">
-                  <div className="message-bubble" role="text">
-                    <ReactMarkdown>
-                    {message.text}
-                    </ReactMarkdown>
-
-                  </div>
-                  <div className="message-time" aria-label={`Sent at ${formatTime(message.timestamp)}`}>
-                    {formatTime(message.timestamp)}
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {isTyping && (
-              <div className="message bot" role="status" aria-label="AI is typing">
-                <div className="message-avatar" aria-hidden="true">
-                  <BotIcon size={16} />
-                </div>
-                <div className="message-content">
-                  <div className="message-bubble typing">
-                    <div className="typing-indicator" aria-label="Typing indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <form className="chatbot-input" onSubmit={handleSendMessage}>
-            <div className="input-form">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
-                className="message-input"
-                disabled={isTyping}
-                aria-label="Type your message"
-                maxLength={1000}
-                autoComplete="off"
-              />
-              <button 
-                type="submit"
-                className="send-button"
-                disabled={!inputText.trim() || isTyping}
-                aria-label="Send message"
-              >
-                <SendIcon />
-              </button>
+      <div className="chatbot-messages">
+        {messages.map((message) => (
+          <div key={message.id} className={`message ${message.sender}`}>
+            <div className="message-avatar">
+              {message.sender === 'bot' ? <BotIcon size={20} /> : <UserIcon size={20} />}
             </div>
-          </form>
-        </>
+            <div className="message-content">
+              <div className="message-bubble">
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+              </div>
+              <div className="message-time">{formatTime(message.timestamp)}</div>
+            </div>
+          </div>
+        ))}
+        
+        {isTyping && (
+          <div className="message bot typing">
+            <div className="message-avatar">
+              <BotIcon size={20} />
+            </div>
+            <div className="message-content">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <form className="chatbot-input" onSubmit={handleSendMessage}>
+        <div className="input-container">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            disabled={isTyping}
+            aria-label="Type your message"
+          />
+          <button 
+            type="submit"
+            disabled={!inputText.trim() || isTyping}
+            aria-label="Send message"
+          >
+            <SendIcon />
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
