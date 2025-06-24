@@ -1,9 +1,9 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import './Chat.css';
 import ReactMarkdown from 'react-markdown';
+import Sidebar from '../Sidebar/Sidebar';
+import './Chat.css';
+import axios from 'axios';
 
-// Modern SVG icon components
 const SendIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -28,15 +28,81 @@ const UserIcon = ({ size = 20 }) => (
   </svg>
 );
 
+const ImageIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const MenuIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+const ChatIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 18L22 12L16 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8 6L2 12L8 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const CreativeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L3.09 8.26L12 22L20.91 8.26L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 22V8.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const AnalysisIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 3V21H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9 9L12 6L16 10L21 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+    <path d="M12 1V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M12 21V23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4.22 4.22L5.64 5.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M18.36 18.36L19.78 19.78" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M1 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M21 12H23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M4.22 19.78L5.64 18.36" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M18.36 5.64L19.78 4.22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const ChatBot = () => {
-  // ... (keep all your existing state and logic)
-   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your AI assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentMode, setCurrentMode] = useState('general');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,79 +112,89 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
+  // Apply theme class to body
+  useEffect(() => {
+    document.body.className = isDarkMode ? 'dark-theme' : 'light-theme';
+  }, [isDarkMode]);
+
+  // Clear messages when mode changes
+  useEffect(() => {
+    setMessages([]);
+    setSelectedImage(null);
+    setInputText('');
+  }, [currentMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) setSelectedImage(file);
+  };
 
   const handleSendMessage = useCallback(async (e) => {
     e.preventDefault();
-    if (!inputText.trim() || isTyping) return;
+    if ((!inputText.trim() && !selectedImage) || isTyping) return;
 
     const messageText = inputText.trim();
     const userMessage = {
       id: Date.now(),
-      text: messageText,
+      text: messageText || '[Image sent]',
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      image: selectedImage ? URL.createObjectURL(selectedImage) : null
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setSelectedImage(null);
     setIsTyping(true);
 
-    // Send message to backend API
     try {
-      const response = await fetch('https://chatbot-backend-c0ge.onrender.com/api/chats/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          userId: 'user-' + Date.now(), // Simple user ID generation
-          timestamp: new Date().toISOString()
-        })
+      const formData = new FormData();
+      formData.append('message', messageText);
+      formData.append('mode', currentMode);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
+      const response = await axios.post('https://chatbot-backend-c0ge.onrender.com/api/chats/chat', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const reply = response.data?.reply || 'I received your message.';
 
-      const data = await response.json();
-
-      // Update connection status
-      setIsConnected(true);
-
-      if (data.success && data.response) {
-        const botResponse = {
-          id: data.response.id || Date.now() + 1,
-          text: data.response.text,
-          sender: 'bot',
-          timestamp: new Date(data.response.timestamp)
-        };
-        setMessages(prev => [...prev, botResponse]);
-      } else {
-        throw new Error(data.error || 'Failed to get response from server');
-      }
-
-    } catch (error) {
-      console.error('Error sending message to backend:', error);
-
-      // Update connection status
-      setIsConnected(false);
-
-      // Show error message to user
-      const errorResponse = {
+      const botResponse = {
         id: Date.now() + 1,
-        text: error.message.includes('fetch')
-          ? "Sorry, I can't connect to the server right now. Please check if the backend is running."
-          : "Sorry, I encountered an error processing your message. Please try again.",
+        text: reply,
         sender: 'bot',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, errorResponse]);
+
+      setMessages(prev => [...prev, botResponse]);
+      setIsConnected(true);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setIsConnected(false);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        text: 'Sorry, I encountered an error processing your message. Please try again.',
+        sender: 'bot',
+        timestamp: new Date()
+      }]);
     } finally {
       setIsTyping(false);
     }
-  }, [inputText, isTyping]);
+  }, [inputText, selectedImage, isTyping, currentMode]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -127,83 +203,149 @@ const ChatBot = () => {
     }
   }, [handleSendMessage]);
 
-
-
   const formatTime = useCallback((timestamp) => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, []);
 
+  const getModeDisplayName = (mode) => {
+    const modes = {
+      general: 'General Chat',
+      code: 'Code Helper',
+      creative: 'Creative Writing',
+      analysis: 'Data Analysis'
+    };
+    return modes[mode] || 'General Chat';
+  };
+
   return (
-    <div className='chatbot-container' role="dialog" aria-label="AI Assistant Chat">
-      <div className="chatbot-header">
-        <div className="header-content">
-          <div className="bot-avatar">
-            <BotIcon />
-          </div>
-          <div className="header-info">
-            <h3>AI Assistant</h3>
-            <div className="status-container">
-              <span className={`status-indicator ${isConnected ? 'online' : 'offline'}`}></span>
-              <span className="status-text">{isConnected ? 'Online' : 'Offline'}</span>
+    <div className="app-container">
+      <Sidebar
+        isOpen={isMobile ? sidebarOpen : true}
+        onClose={() => setSidebarOpen(false)}
+        currentMode={currentMode}
+        onModeChange={setCurrentMode}
+      />
+
+      <div className="chatbot-container">
+        <div className="chatbot-header">
+          <div className="header-content">
+            {isMobile && (
+              <button className="menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+                <MenuIcon />
+              </button>
+            )}
+            <div className="bot-avatar"><BotIcon /></div>
+            <div className="header-info">
+              <h3>AI Assistant - {getModeDisplayName(currentMode)}</h3>
+              <div className="status-container">
+                <span className={`status-indicator ${isConnected ? 'online' : 'offline'}`}></span>
+                <span className="status-text">{isConnected ? 'Online' : 'Offline'}</span>
+              </div>
             </div>
+            <button 
+              className="theme-toggle" 
+              onClick={toggleTheme}
+              aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+            >
+              {isDarkMode ? <SunIcon /> : <MoonIcon />}
+            </button>
+          </div>
+        </div>
+
+        <div className="chatbot-messages">
+        {messages.length === 0 && (
+  <div className="welcome-screen">
+    <div className="welcome-logo">
+      <div className="welcome-logo-circle"></div>
+    </div>
+    <h2 className="welcome-title">Ask AI anything</h2>
+    <p className="welcome-subtitle">Get instant help with your questions</p>
+    <div className="welcome-prompts">
+      <div className="welcome-prompt" onClick={() => setInputText("Help me write a creative story")}>
+        <span className="welcome-prompt-icon">✨</span>
+        <span className="welcome-prompt-text">Help me write a creative story</span>
+      </div>
+      <div className="welcome-prompt" onClick={() => setInputText("Explain quantum computing simply")}>
+        <span className="welcome-prompt-icon">🧠</span>
+        <span className="welcome-prompt-text">Explain quantum computing simply</span>
+      </div>
+      <div className="welcome-prompt" onClick={() => setInputText("Debug my JavaScript code")}>
+        <span className="welcome-prompt-icon">🔧</span>
+        <span className="welcome-prompt-text">Debug my JavaScript code</span>
+      </div>
+      <div className="welcome-prompt" onClick={() => setInputText("Plan a weekend trip")}>
+        <span className="welcome-prompt-icon">🗺️</span>
+        <span className="welcome-prompt-text">Plan a weekend trip</span>
+      </div>
+    </div>
+  </div>
+)}
+          {messages.map((message) => (
+            <div key={message.id} className={`message ${message.sender}`}>
+              <div className="message-avatar">
+                {message.sender === 'bot' ? <BotIcon size={20} /> : <UserIcon size={20} />}
+              </div>
+              <div className="message-content">
+                <div className="message-bubble">
+                  {message.image && <img src={message.image} alt="Uploaded" className="message-image" />}
+                  <ReactMarkdown>{message.text}</ReactMarkdown>
+                </div>
+                <div className="message-time">{formatTime(message.timestamp)}</div>
+              </div>
+            </div>
+          ))}
+          {isTyping && (
+            <div className="message bot typing">
+              <div className="message-avatar"><BotIcon size={20} /></div>
+              <div className="message-content">
+                <div className="typing-indicator"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="chatbot-input">
+          <div className="input-container">
+            {selectedImage && (
+              <div className="selected-image-preview">
+                <img src={URL.createObjectURL(selectedImage)} alt="Selected" />
+                <button type="button" onClick={() => setSelectedImage(null)} className="remove-image">×</button>
+              </div>
+            )}
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              disabled={isTyping}
+              aria-label="Type your message"
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="image-button" aria-label="Upload image">
+              <ImageIcon />
+            </button>
+            <button
+              type="button"
+              disabled={(!inputText.trim() && !selectedImage) || isTyping}
+              onClick={handleSendMessage}
+              aria-label="Send message"
+            >
+              <SendIcon />
+            </button>
           </div>
         </div>
       </div>
-
-      <div className="chatbot-messages">
-        {messages.map((message) => (
-          <div key={message.id} className={`message ${message.sender}`}>
-            <div className="message-avatar">
-              {message.sender === 'bot' ? <BotIcon size={20} /> : <UserIcon size={20} />}
-            </div>
-            <div className="message-content">
-              <div className="message-bubble">
-                <ReactMarkdown>{message.text}</ReactMarkdown>
-              </div>
-              <div className="message-time">{formatTime(message.timestamp)}</div>
-            </div>
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className="message bot typing">
-            <div className="message-avatar">
-              <BotIcon size={20} />
-            </div>
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form className="chatbot-input" onSubmit={handleSendMessage}>
-        <div className="input-container">
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            disabled={isTyping}
-            aria-label="Type your message"
-          />
-          <button 
-            type="submit"
-            disabled={!inputText.trim() || isTyping}
-            aria-label="Send message"
-          >
-            <SendIcon />
-          </button>
-        </div>
-      </form>
     </div>
   );
 };
 
 export default ChatBot;
+export { ChatIcon, CodeIcon, CreativeIcon, AnalysisIcon };

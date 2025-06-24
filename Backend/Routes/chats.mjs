@@ -1,70 +1,164 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { Mistral } from '@mistralai/mistralai';
 import * as dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
 const apiKey = process.env.MISTRAL_API_KEY;
-const client = new Mistral({apiKey:apiKey});
+const client = new Mistral({ apiKey });
 const router = Router();
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'Chatbot', 'Backend', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer disk storage with file filter and size limit
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Accept images only
+  if (/^image\/(png|jpe?g|gif|webp)$/i.test(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
 
 router.get('/', (req, res) => {
   res.send('Express server is running!');
 });
 
-// Chat message endpoint
-router.post('/message', async (req, res) => {
+router.post('/chat', upload.single('image'), async (req, res) => {
   try {
-    const { message, userId, timestamp } = req.body;
+    const { message, mode } = req.body;
+    const imageFile = req.file;
 
-    // Validate input
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return res.status(400).json({
-        error: 'Message is required and must be a non-empty string'
-      });
+    console.log('Message:', message);
+    console.log('Mode:', mode);
+    if (imageFile) {
+      console.log('Image:', imageFile.originalname);
     }
 
-    // Simulate processing time (replace with actual AI/chatbot logic)
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
- // Generate bot response (replace with actual AI integration)
-    const chatResponse = await client.chat.complete({
-        model: "mistral-small-2503",
-        messages: [{role: 'user', content: message}]
-    });
+    let reply = '';
 
-    console.log('Chat:', chatResponse.choices?.[0]?.message?.content);
-    // Send response
-    res.json({
-      success: true,
-      response: {
-        id: Date.now(),
-        text: chatResponse.choices?.[0]?.message?.content,
-        sender: 'bot',
-        timestamp: new Date().toISOString()
-      },
-      userMessage: {
-        id: Date.now() - 1,
-        text: message.trim(),
-        sender: 'user',
-        timestamp: timestamp || new Date().toISOString()
+    if (imageFile) {
+      // Read image as base64 and construct data URL
+      const filePath = path.join(uploadsDir, imageFile.filename);
+      const mimeType = imageFile.mimetype;
+      let base64Image, dataUrl;
+      try {
+        const imageBuffer = fs.readFileSync(filePath);
+        base64Image = imageBuffer.toString('base64');
+        dataUrl = `data:${mimeType};base64,${base64Image}`;
+      } catch (err) {
+        console.error('Error reading image file:', err.message);
+        return res.status(500).json({ reply: '❌ Failed to process image.' });
       }
-    });
+      let completion;
+      try {
+        completion = await client.chat.complete({
+          model: 'mistral-small-2503',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: message || "What's in this image?" },
+                { type: 'image_url', imageUrl: dataUrl }
+              ]
+            }
+          ]
+        });
+      } catch (err) {
+        console.error('Mistral API error:', err.message);
+        // Clean up file before returning
+        try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
+        return res.status(500).json({ reply: '❌ Failed to connect to AI model.' });
+      }
+      // Clean up file after processing
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error('Error deleting image file:', err.message);
+      }
+      reply = completion?.choices?.[0]?.message?.content ?? "🤖 Sorry, I couldn't generate a response.";
+      reply += ` (Received image: ${imageFile.originalname})`;
+      return res.json({ reply });
+    }
+
+    // Switch mode logic for text-only
+    switch (mode) {
+      case 'code': {
+        const systemPrompt = 'You are a helpful coding assistant. Help users with their code and explain concepts clearly.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      case 'general': {
+        const systemPrompt = 'You are a general purpose chatbot. Be friendly and helpful.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      case 'creative': {
+        const systemPrompt = 'You are a creative assistant. Help users write stories, poems, and imaginative content.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      case 'analysis': {
+        const systemPrompt = 'You are a data analysis assistant. Help users understand data, statistics, and analytics.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      default: {
+        reply = 'Invalid mode selected.';
+        break;
+      }
+    }
+
+    return res.json({ reply });
 
   } catch (error) {
-    console.error('Error processing message:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Sorry, I encountered an error processing your message. Please try again.'
-    });
+    console.error('❌ Error in /chat:', error.message);
+    return res.status(500).json({ reply: '❌ An error occurred. Please try again later.' });
   }
 });
 
-// Health check endpoint
-router.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
+// 🔁 Mistral Reply Helper Function
+async function getMistralReply(userMessage, systemPrompt) {
+  try {
+    const completion = await client.chat.complete({
+      model: 'mistral-small-2503',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ]
+    });
+
+    return (
+      completion?.choices?.[0]?.message?.content ??
+      "🤖 Sorry, I couldn't generate a response."
+    );
+  } catch (err) {
+    console.error('Mistral API error:', err.message);
+    return '⚠️ Failed to connect to AI model.';
+  }
+}
+
 export default router;
