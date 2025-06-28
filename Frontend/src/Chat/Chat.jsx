@@ -212,7 +212,16 @@ const ChatBot = () => {
       general: 'General Chat',
       code: 'Code Helper',
       creative: 'Creative Writing',
-      analysis: 'Data Analysis'
+      analysis: 'Data Analysis',
+      math: 'Mathematics',
+      physics: 'Physics',
+      biology: 'Biology',
+      chemistry: 'Chemistry',
+      geography: 'Geography',
+      accounting: 'Accounting',
+      commerce: 'Commerce',
+      'computer-science': 'Computer Science',
+      economics: 'Economics'
     };
     return modes[mode] || 'General Chat';
   };
@@ -236,7 +245,7 @@ const ChatBot = () => {
             )}
             <div className="bot-avatar"><BotIcon /></div>
             <div className="header-info">
-              <h3>AI Assistant - {getModeDisplayName(currentMode)}</h3>
+              <h3>{getModeDisplayName(currentMode)}</h3>
               <div className="status-container">
                 <span className={`status-indicator ${isConnected ? 'online' : 'offline'}`}></span>
                 <span className="status-text">{isConnected ? 'Online' : 'Offline'}</span>
@@ -269,14 +278,8 @@ const ChatBot = () => {
         <span className="welcome-prompt-icon">🧠</span>
         <span className="welcome-prompt-text">Explain quantum computing simply</span>
       </div>
-      <div className="welcome-prompt" onClick={() => setInputText("Debug my JavaScript code")}>
-        <span className="welcome-prompt-icon">🔧</span>
-        <span className="welcome-prompt-text">Debug my JavaScript code</span>
-      </div>
-      <div className="welcome-prompt" onClick={() => setInputText("Plan a weekend trip")}>
-        <span className="welcome-prompt-icon">🗺️</span>
-        <span className="welcome-prompt-text">Plan a weekend trip</span>
-      </div>
+   
+      
     </div>
   </div>
 )}

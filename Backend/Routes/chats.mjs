@@ -100,7 +100,6 @@ router.post('/chat', upload.single('image'), async (req, res) => {
         console.error('Error deleting image file:', err.message);
       }
       reply = completion?.choices?.[0]?.message?.content ?? "🤖 Sorry, I couldn't generate a response.";
-      reply += ` (Received image: ${imageFile.originalname})`;
       return res.json({ reply });
     }
 
