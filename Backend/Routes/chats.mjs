@@ -120,9 +120,50 @@ router.post('/chat', upload.single('image'), async (req, res) => {
         reply = await getMistralReply(message, systemPrompt);
         break;
       }
-      case 'analysis': {
-        const systemPrompt = 'You are a data analysis assistant. Help users understand data, statistics, and analytics.';
+      case 'commerce': {
+        const systemPrompt = 'You are a business and commerce expert. Help users with business strategy, market analysis, e-commerce, sales, marketing, and commercial decision-making. Provide practical insights for business growth and success.';
         reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      case 'economics': {
+        const systemPrompt = 'You are an economics expert. Help users understand economic principles, market dynamics, financial analysis, economic policy, and macroeconomic trends. Explain complex economic concepts clearly with real-world examples.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      case 'computer-science': {
+        const systemPrompt = 'You are a computer science expert. Help users with algorithms, data structures, software engineering principles, system design, computational theory, and computer science concepts. Provide thorough technical explanations and practical applications.';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
+      // Magistral-based nodes with specialized system prompts
+      case 'physics': {
+        const systemPrompt = 'You are a physics expert with deep knowledge across all areas of physics. Help users understand physical phenomena, solve physics problems, explain theories from classical mechanics to quantum physics, and connect physics concepts to real-world applications. Use clear explanations and mathematical rigor when appropriate.';
+        reply = await getMagistralReply(message, systemPrompt);
+        break;
+      }
+      case 'biology': {
+        const systemPrompt = 'You are a biology expert with comprehensive knowledge across all biological sciences. Help users understand living systems, biological processes, evolution, genetics, ecology, anatomy, physiology, and molecular biology. Explain complex biological concepts clearly and connect them to current research and applications.';
+        reply = await getMagistralReply(message, systemPrompt);
+        break;
+      }
+      case 'chemistry': {
+        const systemPrompt = 'You are a chemistry expert with deep knowledge across organic, inorganic, physical, and analytical chemistry. Help users understand chemical reactions, molecular structures, chemical principles, laboratory techniques, and real-world applications of chemistry. Provide clear explanations with proper chemical notation when needed.';
+        reply = await getMagistralReply(message, systemPrompt);
+        break;
+      }
+      case 'math': {
+        const systemPrompt = 'You are a mathematics expert skilled in all areas of mathematics from basic arithmetic to advanced topics like calculus, linear algebra, statistics, and discrete mathematics. Help users solve problems, understand mathematical concepts, and see the beauty and applications of mathematics. Provide step-by-step solutions when appropriate.';
+        reply = await getMagistralReply(message, systemPrompt);
+        break;
+      }
+      case 'accounting': {
+        const systemPrompt = 'You are an accounting and finance expert. Help users with financial accounting, managerial accounting, tax preparation, financial analysis, budgeting, auditing, and financial reporting. Provide accurate guidance on accounting principles, standards, and best practices for individuals and businesses.';
+        reply = await getMagistralReply(message, systemPrompt);
+        break;
+      }
+      case 'analysis': {
+        const systemPrompt = 'You are a data analysis expert. Help users analyze data, understand statistics, create visualizations, interpret trends, perform quantitative research, and draw meaningful insights from complex datasets. Guide users through analytical methodologies and statistical reasoning.';
+        reply = await getMagistralReply(message, systemPrompt);
         break;
       }
       default: {
@@ -144,6 +185,26 @@ async function getMistralReply(userMessage, systemPrompt) {
   try {
     const completion = await client.chat.complete({
       model: 'mistral-small-2503',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ]
+    });
+
+    return (
+      completion?.choices?.[0]?.message?.content ??
+      "🤖 Sorry, I couldn't generate a response."
+    );
+  } catch (err) {
+    console.error('Mistral API error:', err.message);
+    return '⚠️ Failed to connect to AI model.';
+  }
+}
+
+async function getMagistralReply(userMessage, systemPrompt) {
+  try {
+    const completion = await client.chat.complete({
+      model: 'magistral-small-2506',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
