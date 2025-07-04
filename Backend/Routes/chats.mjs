@@ -166,6 +166,11 @@ router.post('/chat', upload.single('image'), async (req, res) => {
         reply = await getMistralReply(message, systemPrompt);
         break;
       }
+      case 'geography': {
+        const systemPrompt = 'You are a geography expert. Help users unserstand all things geography in depth jsut like a proffesional';
+        reply = await getMistralReply(message, systemPrompt);
+        break;
+      }
       default: {
         reply = 'Invalid mode selected.';
         break;
