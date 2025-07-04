@@ -81,25 +81,35 @@
   overflow-y: auto;
 }
 
-/* Custom sidebar scrollbar styles */
-.sidebar-content::-webkit-scrollbar {
-  width: 4px;
-}
+/* Remove sidebar-content scrollbar styles and enforce sidebar scrollbar styles */
+.sidebar-content::-webkit-scrollbar,
+.sidebar-content::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #2d4fe7 0%, #3125d4 100%);
-  border-radius: 6px;
-}
-.sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  display: none !important;
 }
 
-/* For Firefox */
-.sidebar-content {
-  scrollbar-width: thin;
-  scrollbar-color: #764ba2 #e0e0e0;
+.sidebar::-webkit-scrollbar {
+  width: 1px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #000 !important;
+  border-radius: 1px;
+ 
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #000 !important;
+}
+
+.dark-theme .sidebar::-webkit-scrollbar-thumb {
+  background: #000 !important;
+  border-radius: 1px;
+  width: 3px;
+}
+
+.dark-theme .sidebar::-webkit-scrollbar-track {
+  background: #000 !important;
 }
 
 .mode-item {
@@ -201,10 +211,13 @@
 
 /* Dark Theme Sidebar */
 .dark-theme .sidebar {
-  background: rgba(30, 41, 59, 0.92);
+  background:black;
   color: #f3f3fa;
   box-shadow: 2px 0 16px rgba(67, 97, 238, 0.13);
   border-right: 1px solid rgba(67, 97, 238, 0.18);
+}
+.dark-theme .mode-item{
+  background: #000;
 }
 
 .dark-theme .sidebar .sidebar-item:hover, .dark-theme .sidebar .sidebar-item.active {
@@ -216,43 +229,9 @@
   color: #f3f3fa;
 }
 
-/* Sidebar Scrollbar Styles */
-.sidebar::-webkit-scrollbar {
-  width: 3px;
-  background: transparent;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(67, 97, 238, 0.18);
-  border-radius: 6px;
-  transition: background 0.3s;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(67, 97, 238, 0.32);
-}
-
-/* Light Theme Sidebar Scrollbar */
-.light-theme .sidebar::-webkit-scrollbar-thumb {
-  background: rgba(67, 97, 238, 0.18);
-}
-
-.light-theme .sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(67, 97, 238, 0.32);
-}
-
-/* Dark Theme Sidebar Scrollbar */
-.dark-theme .sidebar::-webkit-scrollbar-thumb {
-  background: rgba(163, 133, 224, 0.22);
-}
-
-.dark-theme .sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(163, 133, 224, 0.38);
-}
-
 .sidebar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(67, 97, 238, 0.18) transparent;
+  scrollbar-color: rgba(67, 98, 238, 0.021) transparent;
 }
 
 .dark-theme .sidebar {

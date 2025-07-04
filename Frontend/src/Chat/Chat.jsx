@@ -283,7 +283,7 @@ const ChatBot = () => {
     </div>
   </div>
 )}
-          {messages.map((message) => (
+          {(isMobile ? messages.slice(-30) : messages).map((message) => (
             <div key={message.id} className={`message ${message.sender}`}>
               <div className="message-avatar">
                 {message.sender === 'bot' ? <BotIcon size={20} /> : <UserIcon size={20} />}
