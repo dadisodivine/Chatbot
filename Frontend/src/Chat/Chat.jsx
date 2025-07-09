@@ -109,11 +109,18 @@ const ChatBot = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const currentModeRef = useRef(currentMode);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
-  // Load conversation history from localStorage on component mount
+  // Update the ref when currentMode changes
+  useEffect(() => {
+    currentModeRef.current = currentMode;
+  }, [currentMode]);
+
+  // Load conversation history from localStorage on component mount and mode changes
   useEffect(() => {
     const savedMessages = localStorage.getItem(`chatbot-messages-${currentMode}`);
+    console.log(`Loading messages for mode: ${currentMode}`, savedMessages ? 'Found saved messages' : 'No saved messages');
     if (savedMessages) {
       try {
         const parsedMessages = JSON.parse(savedMessages);
@@ -123,20 +130,29 @@ const ChatBot = () => {
           timestamp: new Date(msg.timestamp)
         }));
         setMessages(messagesWithDates);
+        console.log(`Loaded ${messagesWithDates.length} messages for mode: ${currentMode}`);
       } catch (error) {
         console.error('Error loading conversation history:', error);
       }
+    } else {
+      // Only clear messages if there are no saved messages for this mode
+      setMessages([]);
+      console.log(`No saved messages found for mode: ${currentMode}, clearing messages`);
     }
+    setSelectedImage(null);
+    setInputText('');
   }, [currentMode]);
 
-  // Save messages to localStorage whenever messages change
+  // Save messages to localStorage whenever messages change (but not when mode changes)
   useEffect(() => {
     if (messages.length > 0) {
       // Keep only the last 50 messages to prevent localStorage from getting too large
       const messagesToSave = messages.slice(-50);
-      localStorage.setItem(`chatbot-messages-${currentMode}`, JSON.stringify(messagesToSave));
+      const modeToSave = currentModeRef.current;
+      localStorage.setItem(`chatbot-messages-${modeToSave}`, JSON.stringify(messagesToSave));
+      console.log(`Saved ${messagesToSave.length} messages for mode: ${modeToSave}`);
     }
-  }, [messages, currentMode]);
+  }, [messages]); // Only depend on messages, not currentMode
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -159,16 +175,26 @@ const ChatBot = () => {
     document.body.className = isDarkMode ? 'dark-theme' : 'light-theme';
   }, [isDarkMode]);
 
-  // Clear messages when mode changes
-  useEffect(() => {
-    setMessages([]);
-    setSelectedImage(null);
-    setInputText('');
-  }, [currentMode]);
-
   const clearConversation = () => {
     setMessages([]);
     localStorage.removeItem(`chatbot-messages-${currentMode}`);
+    console.log(`Cleared conversation for mode: ${currentMode}`);
+  };
+
+  // Debug function to check localStorage contents
+  const debugLocalStorage = () => {
+    console.log('=== localStorage Debug ===');
+    const modes = ['general', 'code', 'creative', 'analysis', 'math', 'physics', 'biology', 'chemistry', 'geography', 'accounting', 'commerce', 'computer-science', 'economics'];
+    modes.forEach(mode => {
+      const saved = localStorage.getItem(`chatbot-messages-${mode}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        console.log(`${mode}: ${parsed.length} messages`);
+      } else {
+        console.log(`${mode}: no messages`);
+      }
+    });
+    console.log('========================');
   };
 
   const toggleTheme = () => {
@@ -308,6 +334,15 @@ const ChatBot = () => {
                 <TrashIcon />
               </button>
             )}
+            <button 
+              className="debug-button" 
+              onClick={debugLocalStorage}
+              aria-label="Debug localStorage"
+              title="Debug localStorage"
+              style={{ background: 'none', border: 'none', color: '#666', padding: '0.5rem', cursor: 'pointer' }}
+            >
+              🐛
+            </button>
           </div>
         </div>
 
