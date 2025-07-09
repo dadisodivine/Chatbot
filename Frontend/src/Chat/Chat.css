@@ -683,6 +683,39 @@
   transform: rotate(15deg);
 }
 
+.clear-conversation {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  transition: all 0.2s ease;
+  min-width: 44px;
+  min-height: 44px;
+  margin-left: 0.5rem;
+}
+
+.clear-conversation:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  transform: scale(1.05);
+}
+
+.clear-conversation:active {
+  transform: scale(0.95);
+}
+
+.clear-conversation svg {
+  transition: transform 0.2s ease;
+}
+
+.clear-conversation:hover svg {
+  transform: scale(1.1);
+}
+
 /* Light Theme Styles */
 .light-theme {
   background: transparent;
@@ -750,6 +783,14 @@
 
 .light-theme .theme-toggle:hover {
   background: rgba(30, 41, 59, 0.18);
+}
+
+.light-theme .clear-conversation {
+  color: #dc2626;
+}
+
+.light-theme .clear-conversation:hover {
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
 /* Light theme: make typing indicator dots dark */
@@ -833,6 +874,14 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.dark-theme .clear-conversation {
+  color: #f87171;
+}
+
+.dark-theme .clear-conversation:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+}
+
 /* Smooth Theme Transition */
 .app-container,
 .chatbot-container,
@@ -866,6 +915,18 @@
   }
   
   .theme-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .clear-conversation {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.5rem;
+    margin-left: 0.25rem;
+  }
+  
+  .clear-conversation svg {
     width: 14px;
     height: 14px;
   }
